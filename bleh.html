@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>You Collected My Heart</title>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
+</head>
+<body style="margin:0;background:#111;">
+
+<script>
+
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 500,
+    physics: {
+        default: 'arcade',
+        arcade: { gravity: { y: 800 }, debug: false }
+    },
+    scene: { preload, create, update }
+};
+
+let player, cursors, hearts, collected = 0, popup;
+
+new Phaser.Game(config);
+
+function preload() {
+    this.load.image('player','player.png');
+    this.load.image('heart','heart.png');
+    this.load.image('ground','https://labs.phaser.io/assets/sprites/platform.png');
+}
+
+function create() {
+
+    const ground = this.physics.add.staticGroup();
+    ground.create(400,480,'ground').setScale(2).refreshBody();
+
+    player = this.physics.add.sprite(120,300,'player').setScale(0.25);
+    player.setCollideWorldBounds(true);
+
+    hearts = this.physics.add.group({
+        key:'heart',
+        repeat:4,
+        setXY:{x:200,y:0,stepX:120}
+    });
+
+    hearts.children.iterate(h=>{
+        h.setScale(0.15);
+        h.setBounceY(0.4);
+    });
+
+    this.physics.add.collider(player,ground);
+    this.physics.add.collider(hearts,ground);
+    this.physics.add.overlap(player,hearts,collect,null,this);
+
+    cursors = this.input.keyboard.createCursorKeys();
+
+    // POPUP TEXT (auto wraps to fit screen)
+    popup = this.add.text(400,120,"",{
+        fontSize:"26px",
+        fill:"#ffffff",
+        backgroundColor:"#000000cc",
+        padding:{x:20,y:15},
+        align:"center",
+        wordWrap:{ width: 650 }
+    }).setOrigin(0.5).setVisible(false);
+}
+
+function update(){
+
+    if(cursors.left.isDown) player.setVelocityX(-250);
+    else if(cursors.right.isDown) player.setVelocityX(250);
+    else player.setVelocityX(0);
+
+    if(cursors.up.isDown && player.body.touching.down)
+        player.setVelocityY(-550);
+}
+
+function collect(player,heart){
+
+    heart.disableBody(true,true);
+    collected++;
+
+    const msgs=[
+        "Hi baby!",
+        "You mean the world to me",
+        "I'm sorry I'm a bad partner sometimes",
+        "But I love you so much. And however much angry I might get, it doesn't make me love you any less. Sometimes I fear you might think I'm not worth it, given that you're always around such high achievers. But you always prove me wrong. Whatever good there is in me, you gave me at least half of it.",
+        "You collected my heart 💌!!"
+    ];
+
+    popup.setText(msgs[Math.min(collected-1,4)]);
+    popup.setVisible(true);
+
+    // longer reading time for long messages
+  let readTime = 7000 + msgs[collected-1].length * 70;
+
+
+    setTimeout(()=>{
+        popup.setVisible(false);
+    }, readTime);
+}
+
+</script>
+</body>
+</html>
