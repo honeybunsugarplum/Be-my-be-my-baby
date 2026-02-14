@@ -21,6 +21,8 @@ const config = {
 };
 
 let player, cursors, hearts, collected = 0, popup;
+let left=false, right=false, jump=false;
+
 
 new Phaser.Game(config);
 
@@ -64,15 +66,28 @@ function create() {
         align:"center",
         wordWrap:{ width: 650 }
     }).setOrigin(0.5).setVisible(false);
-}
+// TOUCH CONTROLS
+this.input.on('pointerdown', (p)=>{
+    if(p.x < 250) left = true;
+    else if(p.x > 550) right = true;
+    else jump = true;
+});
+
+this.input.on('pointerup', ()=>{
+    left=false;
+    right=false;
+    jump=false;
+});
+
 
 function update(){
 
-    if(cursors.left.isDown) player.setVelocityX(-250);
-    else if(cursors.right.isDown) player.setVelocityX(250);
+    // keyboard
+    if(cursors.left.isDown || left) player.setVelocityX(-250);
+    else if(cursors.right.isDown || right) player.setVelocityX(250);
     else player.setVelocityX(0);
 
-    if(cursors.up.isDown && player.body.touching.down)
+    if((cursors.up.isDown || jump) && player.body.touching.down)
         player.setVelocityY(-550);
 }
 
@@ -104,3 +119,4 @@ function collect(player,heart){
 </script>
 </body>
 </html>
+
